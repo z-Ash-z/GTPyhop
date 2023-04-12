@@ -6,7 +6,7 @@ Method definitions for satellite_htn
 import gtpyhop
 
 ################################################################################
-# The helper functions
+# The helper functions.
 
 def mode_in_satellite(state, mode, satellite):
     """
@@ -95,7 +95,7 @@ def check_image(state, goal):
     return goal_list
 
 ################################################################################
-# The method functions changePointing and storeImage
+# The method functions changePointing and storeImage.
 
 def m_achieveGoal(state, mgoal):
     
@@ -111,7 +111,7 @@ gtpyhop.declare_task_methods('achieve_goal', m_achieveGoal)
 
 
 ################################################################################
-# The method functions changePointing and storeImage
+# The method functions changePointing and storeImage.
 
 def m_changePointing(state, satellite, new_direction, prev_direction):
     """
@@ -132,9 +132,11 @@ def m_changePointing(state, satellite, new_direction, prev_direction):
     
 gtpyhop.declare_task_methods('changePointing', m_changePointing)
 
-def m_switchOFFInstrument(state):
+def m_switchOFFInstrument(state, instrument, satellite):
     pass
 
+def m_calibrateInstrument(state, new_direction, mode):
+    pass
 
 def m_storeImage(state, new_direction, mode):
     """
@@ -150,21 +152,27 @@ def m_storeImage(state, new_direction, mode):
     plan = list()
 
     if satellite and instrument:
-        
-        # Change the pointing of the satellite if needed
-        if state.pointing[satellite] is not new_direction:
-            plan.append(('changePointing', satellite, new_direction, state.pointing[satellite]))
-        
-        # Switching On the instrument
+
+        # Switching On the instrument.
         plan.append(('switchOn', instrument, satellite))
 
-        # Calibrate the instrument
-        plan.append(('calibrate', satellite, instrument, new_direction))
+        # Calibrate the instrument - change this conditions so that it includes min slew time.
+        if state.pointing[satellite] not in state.calibration_target[instrument]:
+            plan.append(('changePointing', satellite, state.calibration_target[instrument][0], state.pointing[satellite]))
+            plan.append(('calibrate', satellite, instrument, state.calibration_target[instrument][0]))
+        else:
+            plan.append(('calibrate', satellite, instrument, state.pointing[satellite]))
+            
 
-        # Take the image
+        print(f'\n------------\nChecking the directions: {state.pointing[satellite]} and {new_direction}')
+        # Change the pointing of the satellite if needed.
+        if state.pointing[satellite] is not new_direction:
+            plan.append(('changePointing', satellite, new_direction, state.pointing[satellite]))
+
+        # Take the image.
         plan.append(('take_image', satellite, new_direction, instrument, mode))
 
-        # switch OFF the instrument - change this later
+        # switch OFF the instrument - change this later.
         # plan.append(('switchOff', instrument, satellite))
 
         return plan

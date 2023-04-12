@@ -80,8 +80,6 @@ def main():
                    ('Planet4', 'thermograph0') : 158,
                    ('Planet3', 'image1') : 42,
                    ('Planet4', 'image1') : 149,
-                   ('Star1', 'thermograph0') : 50,
-                   ('GroundStation0', 'thermograph0') : 50,
                    }
 
     state1.slew_time = {('Star2', 'GroundStation0') : 43.3,
@@ -106,11 +104,37 @@ def main():
                         ('Planet3', 'Planet4') : 29.47,
                         }
     
-    state1.have_image = {}
+    state1.have_image = {('Star2', 'thermograph0') : False,
+                         ('Star1', 'thermograph0') : False,
+                         ('GroundStation0', 'thermograph0') : False,
+                         ('Planet3', 'thermograph0') : False,
+                         ('Planet4', 'thermograph0') : False,
+                         ('Star2', 'image1') : False,
+                         ('Star1', 'image1') : False,
+                         ('GroundStation0', 'image1') : False,
+                         ('Planet3', 'image1') : False,
+                         ('Planet4', 'image1') : False,
+                         }
 
-    state1.power_on = {}
+    state1.power_on = {'instrument0' : False,
+                       'instrument1' : False,
+                       'instrument2' : False,
+                       'instrument3' : False,
+                       'instrument4' : False,
+                       'instrument5' : False,
+                       'instrument6' : False,
+                       'instrument7' : False,
+                       }
 
-    state1.calibrated = {}
+    state1.calibrated = {'instrument0' : False,
+                         'instrument1' : False,
+                         'instrument2' : False,
+                         'instrument3' : False,
+                         'instrument4' : False,
+                         'instrument5' : False,
+                         'instrument6' : False,
+                         'instrument7' : False,
+                       }
     
     state1.data_stored = 0
 
@@ -120,8 +144,8 @@ def main():
 
     goal1 = gtpyhop.Multigoal('goal1')
 
-    goal1.have_image = {('Star1', 'thermograph0') : True,
-                        ('GroundStation0', 'thermograph0') : True,
+    goal1.have_image = {('Planet3', 'thermograph0') : True,
+                        ('Planet4', 'thermograph0') : True,
                         }
     goal1.display('The goal state')
 
