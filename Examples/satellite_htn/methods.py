@@ -103,7 +103,11 @@ def m_achieveGoal(state, mgoal):
     #     return [('changePointing', satellite, mgoal.pointing[satellite], state.pointing[satellite]), ('achieve_goal', mgoal)]
     
     for new_direction, mode in check_image(state, mgoal):
-        return [('storeImage', new_direction, mode), ('achieve_goal', mgoal)]
+        satellite, instrument = min_fuel(state, new_direction, mode)
+        if satellite and instrument:
+            return [('calibrateInstrument', satellite, instrument), ('storeImage', satellite, instrument, mode, new_direction), ('achieve_goal', mgoal)]
+        else:
+            return False
     
     return []
 
@@ -135,48 +139,51 @@ gtpyhop.declare_task_methods('changePointing', m_changePointing)
 def m_switchOFFInstrument(state, instrument, satellite):
     pass
 
-def m_calibrateInstrument(state, new_direction, mode):
-    pass
-
-def m_storeImage(state, new_direction, mode):
+def m_calibrateInstrument(state, satellite, instrument):
     """
-    Chooses the satellite that is closet to the new_direction and stores an image with the mode chosen.
+    The method to calibrate the instrument that we need.
 
     Args:
-        state: The current state of the system.
-        new_direction: The direction for which we need the image.
-        mode: The mode of the image that we need to choose.
+        state: The state of the system.
+        satellite: The satellite that is housing the instrument.
+        instrument: The instrument which has to be calibrated.
+
+    Returns:
+        The plan the needs to be excecuted to calibrate the instrument.
     """
-    satellite, instrument = min_fuel(state, new_direction, mode)
+    plan = list()
+
+    # Switching On the instrument.
+    plan.append(('switchOn', instrument, satellite))
+
+    # Calibrate the instrument - change this conditions so that it includes min slew time.
+    if state.pointing[satellite] not in state.calibration_target[instrument]:
+        plan.append(('changePointing', satellite, state.calibration_target[instrument][0], state.pointing[satellite]))
+        plan.append(('calibrate', satellite, instrument, state.calibration_target[instrument][0]))
+    else:
+        plan.append(('calibrate', satellite, instrument, state.pointing[satellite]))
+
+    return plan
+
+gtpyhop.declare_task_methods('calibrateInstrument', m_calibrateInstrument)
+
+def m_storeImage(state, satellite, instrument, mode, new_direction):
+    
+    
 
     plan = list()
 
-    if satellite and instrument:
+    print(f'\n------------\nChecking the directions: {state.pointing[satellite]} and {new_direction}')
+    # Change the pointing of the satellite if needed.
+    if state.pointing[satellite] is not new_direction:
+        plan.append(('changePointing', satellite, new_direction, state.pointing[satellite]))
 
-        # Switching On the instrument.
-        plan.append(('switchOn', instrument, satellite))
+    # Take the image.
+    plan.append(('take_image', satellite, new_direction, instrument, mode))
 
-        # Calibrate the instrument - change this conditions so that it includes min slew time.
-        if state.pointing[satellite] not in state.calibration_target[instrument]:
-            plan.append(('changePointing', satellite, state.calibration_target[instrument][0], state.pointing[satellite]))
-            plan.append(('calibrate', satellite, instrument, state.calibration_target[instrument][0]))
-        else:
-            plan.append(('calibrate', satellite, instrument, state.pointing[satellite]))
-            
+    # switch OFF the instrument - change this later.
+    # plan.append(('switchOff', instrument, satellite))
 
-        print(f'\n------------\nChecking the directions: {state.pointing[satellite]} and {new_direction}')
-        # Change the pointing of the satellite if needed.
-        if state.pointing[satellite] is not new_direction:
-            plan.append(('changePointing', satellite, new_direction, state.pointing[satellite]))
-
-        # Take the image.
-        plan.append(('take_image', satellite, new_direction, instrument, mode))
-
-        # switch OFF the instrument - change this later.
-        # plan.append(('switchOff', instrument, satellite))
-
-        return plan
-
-    return False
+    return plan
 
 gtpyhop.declare_task_methods('storeImage', m_storeImage)

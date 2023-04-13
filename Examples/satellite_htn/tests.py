@@ -149,6 +149,6 @@ def main():
                         }
     goal1.display('The goal state')
 
-    gtpyhop.verbose = 2
+    gtpyhop.verbose = 1
     plan = gtpyhop.find_plan(state1, [('achieve_goal', goal1)])
     
