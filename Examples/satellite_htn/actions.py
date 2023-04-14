@@ -24,7 +24,6 @@ def turnTo(s, sat, d_new, d_prev):
         The updated state.
     """
     if (s.pointing[sat] == d_prev) and (d_new != d_prev) and (s.fuel[sat] >= s.slew_time[(d_new, d_prev)]):
-        print(f'\nChanged pointing of {sat} to {d_new}')
         s.pointing[sat] = d_new
         s.fuel[sat] -= s.slew_time[(d_new, d_prev)]
         s.fuel_used += s.slew_time[(d_new, d_prev)]
@@ -44,7 +43,6 @@ def switchOn(s, i, sat):
         The updated state.
     """
     if (s.on_board[i] == sat) and (s.power_avail[sat] == True):
-        print(f'\nSwitched ON {i}')
         s.power_on[i] = True
         s.calibrated[i] = False
         s.power_avail[sat] = False
@@ -81,7 +79,6 @@ def calibrate(s, sat, i, d):
     Returns:
         The updated state.
     """
-    print(f'\nStill haven\'t Calibrated {s.pointing[sat] == d}')
     if (s.on_board[i] == sat) and (d in s.calibration_target[i]) and (s.pointing[sat] == d) and (s.power_on[i] == True):
         print(f'\nCalibrated {i}')
         s.calibrated[i] = True
@@ -101,9 +98,7 @@ def take_image(s, sat, d, i, m):
     Returns:
         The updated state of the image.
     """
-    print(f'Testing conditions for taking image: {s.pointing[sat] == d}')
     if (s.calibrated[i] == True) and (s.on_board[i] == sat) and (m in s.supports[i]) and (s.power_on[i] == True) and (s.pointing[sat] == d) and (s.data_capacity[sat] >= s.data[(d, m)]):
-        print(f'\nImage of {d} captured in mode {m}')
         s.data_capacity[sat] -= s.data[(d, m)]
         s.have_image[(d, m)] = True
         s.data_stored += s.data[(d, m)]

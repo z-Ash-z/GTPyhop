@@ -8,7 +8,7 @@ import gtpyhop
 the_domain = gtpyhop.Domain(__package__)
 
 from .actions import *
-from .methods import *
+from .methods_updated import *
 
 print(f'\n---------------------------------------------------------')
 print(f'Running the {the_domain.__name__} domain')
@@ -104,38 +104,6 @@ def main():
                         ('Planet3', 'Planet4') : 29.47,
                         }
     
-    state1.have_image = {('Star2', 'thermograph0') : False,
-                         ('Star1', 'thermograph0') : False,
-                         ('GroundStation0', 'thermograph0') : False,
-                         ('Planet3', 'thermograph0') : False,
-                         ('Planet4', 'thermograph0') : False,
-                         ('Star2', 'image1') : False,
-                         ('Star1', 'image1') : False,
-                         ('GroundStation0', 'image1') : False,
-                         ('Planet3', 'image1') : False,
-                         ('Planet4', 'image1') : False,
-                         }
-
-    state1.power_on = {'instrument0' : False,
-                       'instrument1' : False,
-                       'instrument2' : False,
-                       'instrument3' : False,
-                       'instrument4' : False,
-                       'instrument5' : False,
-                       'instrument6' : False,
-                       'instrument7' : False,
-                       }
-
-    state1.calibrated = {'instrument0' : False,
-                         'instrument1' : False,
-                         'instrument2' : False,
-                         'instrument3' : False,
-                         'instrument4' : False,
-                         'instrument5' : False,
-                         'instrument6' : False,
-                         'instrument7' : False,
-                       }
-    
     state1.data_stored = 0
 
     state1.fuel_used = 0
@@ -151,4 +119,3 @@ def main():
 
     gtpyhop.verbose = 1
     plan = gtpyhop.find_plan(state1, [('achieve_goal', goal1)])
-    

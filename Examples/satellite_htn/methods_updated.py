@@ -23,16 +23,13 @@ def getPointingTasks(state, mgoal):
     Returns:
         Returns the list of the pointing tasks that are not completed yet.
     """
-
     task_list = list()
+
     if 'pointing' in mgoal.__dict__.keys():
-        if 'pointing' in state.__dict__.keys():
-            for key in mgoal.pointing.keys():
-                if mgoal.pointing[key] != state.pointing[key]:
-                    task_list.append(key)
-            return task_list
-        else:
-            return mgoal.pointing.keys()
+        for key in mgoal.pointing.keys():
+            if mgoal.pointing[key] != state.pointing[key]:
+                task_list.append(key)
+        return task_list
     else:
         return None
     
@@ -49,16 +46,15 @@ def getHaveImageTasks(state, mgoal):
         Returns the list of the have_image tasks that are not completed yet.
     """
     task_list = list()
+
     if 'have_image' in mgoal.__dict__.keys():
-        if 'have_image' in state.__dict__.keys():
-            for key in mgoal.have_image.keys():
-                if key in state.have_image.keys():
-                    if mgoal.have_image[key] != state.have_image[key]:
-                        task_list.append(key)
-                else:
+        for key in mgoal.have_image.keys():
+            if key in state.have_image.keys():
+                if mgoal.have_image[key] != state.have_image[key]:
                     task_list.append(key)
-        else:
-            return mgoal.have_image.keys()
+            else:
+                task_list.append(key)
+        return task_list
     else:
         return None
 
