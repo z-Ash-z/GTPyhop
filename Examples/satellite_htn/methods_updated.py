@@ -158,6 +158,17 @@ def getImageStatus(state, mgoal, task, pointing_tasks):
 
     return status
 
+
+def getPointingStatus(state, mgoal, task):
+
+    status = 'Change-Pointing'
+    
+    if state.pointing[task] == mgoal.pointing[task]:
+        status = 'Done'
+    
+    return status
+
+
 ################################################################################
 # The Methods to create the plan.
 
@@ -179,22 +190,35 @@ def m_achieveGoal(state, mgoal):
     if image_tasks:
         for task in image_tasks:
             status = getImageStatus(state, mgoal, task, pointing_tasks)
+            new_direction, mode = task
 
             if status['status'] == 'Fail':
                 return False
+            
             elif status['status'] == 'TakeImage':
-                pass # Replace with storeImage -> achieve
+                # StoreImage -> achieve
+                return [('storeImage', status['satellite'], status['instrument'], mode, new_direction), ('achieve_goal', mgoal)]
+            
             elif status['status'] == 'Calib-and-TakeImage':
-                pass # Replace with calibrate -> storeImage -> achieve
+                # CalibrateInstrument -> StoreImage -> achieve
+                return [('calibrateInstrument', status['instrument'], status['satellite']), ('storeImage', status['satellite'], status['instrument'], mode, new_direction), ('achieve_goal', mgoal)]
+
             elif status['status'] == 'Switch-Off':
-                pass # Replace with Switch-Off -> achieve
+                # Instrument-Off -> achieve
+                return [('instrumentOff', status['instrument'], status['satellite']), ('achieve_goal', mgoal)]
+            
             else:
                 continue
 
     if pointing_tasks:
         for task in pointing_tasks:
-            # status =
-            pass
+            status = getPointingStatus(state, mgoal, task)
+            
+            if status == 'Change-Pointing':
+                # ChangePointing -> achieve
+                return [('changePointing', task, mgoal.pointing[task], state.pointing[task]), ('achieve_goal', mgoal)]
+            else:
+                continue
 
     return []
 
@@ -203,3 +227,85 @@ gtpyhop.declare_task_methods('achieve_goal', m_achieveGoal)
 
 ################################################################################
 # The Methods for the tasks.
+
+def m_changePointing(state, satellite, new_direction, prev_direction):
+    """
+    The method that will change the pointing of the satellite if viable.
+
+    Args:
+        state: The current state of the problem.
+        satellite: The satellite that has to be changed.
+        new_direction: The new direction the satellite has to move to.
+        prev_direction: The current direction of the satellite.
+    """
+    if state.pointing[satellite] == new_direction:
+        return []
+    elif not (state.fuel[satellite] >= state.slew_time[(new_direction, prev_direction)]) or not (state.pointing[satellite] == prev_direction):
+        return False
+    else:
+        return [('turnTo', satellite, new_direction, prev_direction)]
+    
+gtpyhop.declare_task_methods('changePointing', m_changePointing)
+
+
+def m_calibrateInstrument(state, instrument, satellite):
+    """
+    The method to calibrate the instrument that we need.
+
+    Args:
+        state: The state of the system.
+        instrument: The instrument which has to be calibrated.
+        satellite: The satellite that is housing the instrument.
+
+    Returns:
+        The plan the needs to be excecuted to calibrate the instrument.
+    """
+    plan = list()
+
+    # Safety check before Switching On the instrument.
+    if state.on_board[instrument] != satellite or not state.power_avail[satellite]:
+        return False
+    plan.append(('switchOn', instrument, satellite))
+
+    # Calibrating the instrument. 
+    if state.pointing[satellite] not in state.calibration_target[instrument]:
+        plan.append(('changePointing', satellite, state.calibration_target[instrument][0], state.pointing[satellite]))
+        plan.append(('calibrate', satellite, instrument, state.calibration_target[instrument][0]))
+    else:
+        plan.append(('calibrate', satellite, instrument, state.pointing[satellite]))
+
+    return plan
+
+gtpyhop.declare_task_methods('calibrateInstrument', m_calibrateInstrument)
+
+
+def m_storeImage(state, satellite, instrument, mode, new_direction):
+    
+    plan = list()
+
+    # Change the pointing of the satellite if needed.
+    if state.pointing[satellite] is not new_direction:
+        plan.append(('changePointing', satellite, new_direction, state.pointing[satellite]))
+
+    # Sanity check.
+    if state.on_board[instrument] != satellite or (mode not in state.supports[instrument]) or (state.power_on[instrument] != True) or (state.data_capacity[satellite] < state.data[(new_direction, mode)]):
+        return False
+    
+    # Take the image.
+    plan.append(('take_image', satellite, new_direction, instrument, mode))
+
+    return plan
+
+gtpyhop.declare_task_methods('storeImage', m_storeImage)
+
+
+def m_instrumentOff(state, instrument, satellite):
+    
+    if not state.power_on[instrument] and state.power_avail[satellite]:
+        return []
+    elif state.on_board[instrument] != satellite or not state.power_on[instrument]:
+        return False
+    else:
+        return [('switchOff', instrument, satellite)]
+    
+gtpyhop.declare_task_methods('instrumentOff', m_instrumentOff)
