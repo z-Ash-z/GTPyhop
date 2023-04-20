@@ -112,6 +112,7 @@ def main():
 
     goal1 = gtpyhop.Multigoal('goal1')
 
+    goal1.pointing = {'satellite2' : 'Planet3'}
     goal1.have_image = {('Planet3', 'thermograph0') : True,
                         ('Planet4', 'thermograph0') : True,
                         }
@@ -119,3 +120,4 @@ def main():
 
     gtpyhop.verbose = 1
     plan = gtpyhop.find_plan(state1, [('achieve_goal', goal1)])
+    print(len(plan))
