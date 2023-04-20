@@ -7,3 +7,4 @@ sys.path.append('../')
 import gtpyhop
 
 from .test import *
+from .tester import *

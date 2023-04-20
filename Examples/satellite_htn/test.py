@@ -11,14 +11,13 @@ the_domain = gtpyhop.Domain(__package__)
 from .actions import *
 from .methods_updated import *
 
-print(f'\n---------------------------------------------------------')
-print(f'Running the {the_domain.__name__} domain')
-
 
 def main():
     """
     Running all the test cases related to the Satellite domain.
     """
+    print(f'\n---------------------------------------------------------')
+    print(f'Running the {the_domain.__name__} domain')
 
     gtpyhop.current_domain = the_domain
 
