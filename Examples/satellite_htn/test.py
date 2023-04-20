@@ -4,6 +4,7 @@ The test cases for the satellite domain.
 """
 
 import gtpyhop
+import time
 
 the_domain = gtpyhop.Domain(__package__)
 
@@ -119,5 +120,8 @@ def main():
     goal1.display('The goal state')
 
     gtpyhop.verbose = 1
+    start_time = time.time()
     plan = gtpyhop.find_plan(state1, [('achieve_goal', goal1)])
-    print(len(plan))
+    end_time = time.time()
+
+    print(f'Found plan : {plan}\n\nwith plan length {len(plan)} in {end_time - start_time} seconds')
