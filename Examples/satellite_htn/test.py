@@ -66,20 +66,20 @@ def main():
                        'satellite2' : 'GroundStation0',
                        }
     
-    state1.data_capacity = {'satellite0' : 1000,
-                            'satellite1' : 1000,
-                            'satellite2' : 1000,
+    state1.data_capacity = {'satellite0' : 1000.0,
+                            'satellite1' : 1000.0,
+                            'satellite2' : 1000.0,
                             }
     
-    state1.fuel = {'satellite0' : 140,
-                   'satellite1' : 138,
-                   'satellite2' : 159,
+    state1.fuel = {'satellite0' : 140.0,
+                   'satellite1' : 138.0,
+                   'satellite2' : 159.0,
                    }
     
-    state1.data = {('Planet3', 'thermograph0') : 73,
-                   ('Planet4', 'thermograph0') : 158,
-                   ('Planet3', 'image1') : 42,
-                   ('Planet4', 'image1') : 149,
+    state1.data = {('Planet3', 'thermograph0') : 73.0,
+                   ('Planet4', 'thermograph0') : 158.0,
+                   ('Planet3', 'image1') : 42.0,
+                   ('Planet4', 'image1') : 149.0,
                    }
 
     state1.slew_time = {('Star2', 'GroundStation0') : 43.3,
@@ -104,9 +104,9 @@ def main():
                         ('Planet3', 'Planet4') : 29.47,
                         }
     
-    state1.data_stored = 0
+    state1.data_stored = 0.0
 
-    state1.fuel_used = 0
+    state1.fuel_used = 0.0
 
     state1.display('The initial State')
 
@@ -123,4 +123,8 @@ def main():
     plan = gtpyhop.find_plan(state1, [('achieve_goal', goal1)])
     end_time = time.time()
 
-    print(f'Found plan : {plan}\n\nwith plan length {len(plan)} in {end_time - start_time} seconds')
+    if plan:
+        print(f'Found plan : {plan}\n\nwith plan length {len(plan)} in {end_time - start_time} seconds')
+
+    else:
+        print(f'PLAN FAILED')
