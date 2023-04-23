@@ -80,7 +80,6 @@ def calibrate(s, sat, i, d):
         The updated state.
     """
     if (s.on_board[i] == sat) and (d in s.calibration_target[i]) and (s.pointing[sat] == d) and (s.power_on[i] == True):
-        print(f'\nCalibrated {i}')
         s.calibrated[i] = True
         return s
 
