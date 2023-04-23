@@ -12,6 +12,10 @@ first_run = True
 ################################################################################
 # The helper functions.
 
+def set_first_run():
+    global first_run
+    first_run = True
+
 def getPointingTasks(state, mgoal):
     """
     The method to get all the tasks that are related to pointing in the goal.
@@ -134,7 +138,7 @@ def select_best_satellite(state, goal, new_direction, mode, pointing_tasks):
 
         # If there are pointing tasks check if we have enough fuel to complete them.
         if pointing_tasks:
-            if satellite in pointing_tasks and goal.pointing[satellite] is not new_direction:
+            if satellite in pointing_tasks and goal.pointing[satellite] != new_direction:
                 cost += state.slew_time[(goal.pointing[satellite], new_direction)]
 
         # Reject satellite if we do not have enough fuel for all the tasks.
