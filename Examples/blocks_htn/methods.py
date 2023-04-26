@@ -6,8 +6,19 @@ Method definitions for blocks_htn.
 import gtpyhop
 
 ################################################################################
+# Some global variables
+nodes_expanded = 0
+
+################################################################################
 # Helper functions that are used in the methods' preconditions.
 
+def setFirstRun():
+    global nodes_expanded
+    nodes_expanded = 0
+
+
+def getNodeCount():
+    return nodes_expanded
 
 def is_done(b1,state,mgoal):
     if b1 == 'table': return True
@@ -100,10 +111,15 @@ def m_take(state,b1):
     """
     Generate either a pickup or an unstack subtask for b1.
     """
+    global nodes_expanded
+    nodes_expanded += 1
+
     if state.clear[b1]:
         if state.pos[b1] == 'table':
+                nodes_expanded += 1
                 return [('pickup',b1)]
         else:
+                nodes_expanded += 1
                 return [('unstack',b1,state.pos[b1])]
     else:
         return False
@@ -116,10 +132,15 @@ def m_put(state,b1,b2):
     Generate either a putdown or a stack subtask for b1.
     b2 is b1's destination: either the table or another block.
     """
+    global nodes_expanded
+    nodes_expanded += 1
+
     if state.holding['hand'] == b1:
         if b2 == 'table':
+                nodes_expanded += 1
                 return [('putdown',b1)]
         else:
+                nodes_expanded += 1
                 return [('stack',b1,b2)]
     else:
         return False

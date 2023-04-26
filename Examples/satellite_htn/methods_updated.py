@@ -8,13 +8,20 @@ import gtpyhop
 ################################################################################
 # Some global variables
 first_run = True
+nodes_expanded = 0
 
 ################################################################################
 # The helper functions.
 
-def set_first_run():
-    global first_run
+def setFirstRun():
+    global first_run, nodes_expanded
     first_run = True
+    nodes_expanded = 0
+
+
+def getNodeCount():
+    return nodes_expanded
+
 
 def getPointingTasks(state, mgoal):
     """
@@ -316,11 +323,15 @@ def m_changePointing(state, satellite, new_direction, prev_direction):
         new_direction: The new direction the satellite has to move to.
         prev_direction: The current direction of the satellite.
     """
+    global nodes_expanded
+    nodes_expanded += 1
+
     if state.pointing[satellite] == new_direction:
         return []
     elif not (state.fuel[satellite] >= state.slew_time[(new_direction, prev_direction)]) or not (state.pointing[satellite] == prev_direction):
         return False
     else:
+        nodes_expanded += 1
         return [('turnTo', satellite, new_direction, prev_direction)]
     
 gtpyhop.declare_task_methods('changePointing', m_changePointing)
@@ -338,6 +349,9 @@ def m_calibrateInstrument(state, instrument, satellite):
     Returns:
         The plan the needs to be excecuted to calibrate the instrument.
     """
+    global nodes_expanded
+    nodes_expanded += 1
+
     plan = list()
 
     # Safety check before Switching On the instrument.
@@ -345,13 +359,16 @@ def m_calibrateInstrument(state, instrument, satellite):
         return False
     
     plan.append(('switchOn', instrument, satellite))
+    nodes_expanded += 1
 
     # Calibrating the instrument. 
     if state.pointing[satellite] not in state.calibration_target[instrument]:
         plan.append(('changePointing', satellite, state.calibration_target[instrument][0], state.pointing[satellite]))
         plan.append(('calibrate', satellite, instrument, state.calibration_target[instrument][0]))
+        nodes_expanded += 2
     else:
         plan.append(('calibrate', satellite, instrument, state.pointing[satellite]))
+        nodes_expanded += 1
 
     return plan
 
@@ -372,11 +389,15 @@ def m_storeImage(state, satellite, instrument, mode, new_direction):
     Returns:
         The plan that needs to be executed for storing the image.
     """
+    global nodes_expanded
+    nodes_expanded += 1
+
     plan = list()
 
     # Change the pointing of the satellite if needed.
     if state.pointing[satellite] is not new_direction:
         plan.append(('changePointing', satellite, new_direction, state.pointing[satellite]))
+        nodes_expanded += 1
 
     # Sanity check.
     if state.on_board[instrument] != satellite or (mode not in state.supports[instrument]) or (state.power_on[instrument] != True) or (state.data_capacity[satellite] < state.data[(new_direction, mode)]):
@@ -384,6 +405,7 @@ def m_storeImage(state, satellite, instrument, mode, new_direction):
     
     # Take the image.
     plan.append(('take_image', satellite, new_direction, instrument, mode))
+    nodes_expanded += 1
 
     return plan
 
@@ -402,11 +424,15 @@ def m_instrumentOff(state, instrument, satellite):
     Returns:
         The plan that needs to be executed for switching off the instrument.
     """
+    global nodes_expanded
+    nodes_expanded += 1
+
     if not state.power_on[instrument] and state.power_avail[satellite]:
         return []
     elif state.on_board[instrument] != satellite or not state.power_on[instrument]:
         return False
     else:
+        nodes_expanded += 1
         return [('switchOff', instrument, satellite)]
     
 gtpyhop.declare_task_methods('instrumentOff', m_instrumentOff)

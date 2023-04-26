@@ -17,7 +17,7 @@ def run_pddl(lines):
     goal = False
 
     # Setting the first run flag in methods for this run
-    set_first_run()
+    setFirstRun()
 
     # Creating the gtpyhop initial and goal states.
     initial_state = gtpyhop.State('initial_state')
@@ -129,12 +129,14 @@ def run_pddl(lines):
     start_time = time.time()
     plan = gtpyhop.find_plan(initial_state, [('achieve_goal', goal_state)])
     end_time = time.time()
+
+    node_count = getNodeCount()
     
     # Resetting the states for the next run.
     del initial_state
     del goal_state
 
-    return plan, (end_time - start_time)
+    return plan, (end_time - start_time), node_count
     
 
 
@@ -156,12 +158,21 @@ def multi_test():
     report_file = open(f'{current_dir}/report.txt', 'w')
 
     # The path where the pddl files are places.
-    problems_path = os.path.join(current_dir, 'problems')
+    home_dir = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
+    problems_path = os.path.join(home_dir, 'Domains/Satellite_Domain/problem')
 
     # Keeping track of the count of the problems.
     file_count = 0
+    failed_count = 0
 
-    for x in os.listdir(problems_path):
+    # Saving the header file
+    report_file.write(f'File Name, Plan Length, CPU Time, Nodes Expanded\n')
+
+    # Getting the problem list
+    problem_list = os.listdir(problems_path)
+    problem_list.sort()
+
+    for x in problem_list:
         if 'problem' in x:
 
             print(f'\n---------------------------------------------------------')
@@ -176,13 +187,14 @@ def multi_test():
             lines = pddl_file.readlines()
 
             # Run the read pddl file.
-            plan, duration = run_pddl(lines)
+            plan, duration, node_count = run_pddl(lines)
 
             # Printing to the report file.
             if plan:
-                report_file.write(f'{problem_file_name}\t{len(plan)}\t{duration}sec\n')
+                report_file.write(f'{problem_file_name},\t{len(plan)},\t{duration}sec,\t{node_count}\n')
             else:
-                report_file.write(f'{problem_file_name}\tFAILED\t{duration}sec\n')
+                report_file.write(f'{problem_file_name},\tFAILED,\t{duration}sec,\t{node_count}\n')
+                failed_count += 1
 
             # Closing actions.
             print(f'Done running {x}')   
@@ -190,4 +202,5 @@ def multi_test():
     
     report_file.close()
     print(f'\n---------------------------')
-    print(f'Tested {file_count} problems')
+    print(f'\nTested {file_count} problems')
+    print(f'\n{failed_count} plans failed out of {file_count}')
